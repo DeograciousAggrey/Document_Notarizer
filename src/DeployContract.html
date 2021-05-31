@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deploy Contracts</title>
+</head>
+<script src="./node_modules/web3/dist/web3.min.js"></script>
+
+<body>
+    <script>
+        let account = "";
+        if (typeof web3 !== 'undefined') {
+            //This statement is executed if you are using metamask
+            async function enableAccounts() {
+                await ethereum.enable().then((account) => {
+                    account = account;
+                })
+            }
+            enableAccounts();
+        } else {
+            //Set the provider you want from the Web3.providers
+            web3 = new Web3 (new Web3.providers.HttpProvider("http://localhost:8545"));
+            account = web3.eth.accounts[0];    
+        }
+
+        let bytecode = '0x608060405234801561001057600080fd5b50610318806100206000396000f3fe608060405234801561001057600080fd5b50600436106100365760003560e01c806353fb92331461003b5780637183616c1461010e575b600080fd5b6100f46004803603602081101561005157600080fd5b810190808035906020019064010000000081111561006e57600080fd5b82018360208201111561008057600080fd5b803590602001918460018302840111640100000000831117156100a257600080fd5b91908080601f016020809104026020016040519081016040528093929190818152602001838380828437600081840152601f19601f8201169050808301925050505050505091929192905050506101c9565b604051808215151515815260200191505060405180910390f35b6101c76004803603602081101561012457600080fd5b810190808035906020019064010000000081111561014157600080fd5b82018360208201111561015357600080fd5b8035906020019184600183028401116401000000008311171561017557600080fd5b91908080601f016020809104026020016040519081016040528093929190818152602001838380828437600081840152601f19601f8201169050808301925050505050505091929192905050506101fa565b005b60008060006101d78461020e565b815260200190815260200160002060009054906101000a900460ff169050919050565b61020b6102068261020e565b6102b5565b50565b60006002826040518082805190602001908083835b602083106102465780518252602082019150602081019050602083039250610223565b6001836020036101000a038019825116818451168082178552505050505050905001915050602060405180830381855afa158015610288573d6000803e3d6000fd5b5050506040513d602081101561029d57600080fd5b81019080805190602001909291905050509050919050565b600160008083815260200190815260200160002060006101000a81548160ff0219169083151502179055505056fea265627a7a72315820ebba857aa69c7f3f5adfc4c82cd1659cd2a872821370ec6b508785e09b92975464736f6c63430005100032';
+        let abi = [
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "document",
+          "type": "string"
+        }
+      ],
+      "name": "notarize",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "document",
+          "type": "string"
+        }
+      ],
+      "name": "checkDocument",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ];
+  let contract = web3.eth.contract(abi);
+  web3.eth.estimateGas ({data: bytecode},
+    function (error, result) {
+        if(!error){
+            contract.new(
+                { from: account,
+                  data: bytecode, 
+                  gas: result
+                }, function (err, contract) {
+                    if (err) {
+                        alert (err);
+                        return;
+                    } else if (contract.address) {
+                        alert ('Contract Address: ' + contract.address);
+                    }
+                });
+        } else {
+            alert ('err =', error);
+        }
+    }
+    );
+    </script>
+    
+</body>
+</html>
