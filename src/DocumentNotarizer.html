@@ -40,7 +40,57 @@
  }
 
 
- let abi =   [
+ let abi = [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "from",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "text",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes32",
+          "name": "hash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "DocumentNotarized",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "from",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "text",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "reason",
+          "type": "string"
+        }
+      ],
+      "name": "NotarizationError",
+      "type": "event"
+    },
     {
       "constant": false,
       "inputs": [
@@ -52,8 +102,8 @@
       ],
       "name": "notarize",
       "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
+      "payable": true,
+      "stateMutability": "payable",
       "type": "function"
     },
     {
@@ -80,13 +130,47 @@
   ];
   var contract = web3.eth.contract(abi);
  var notarizer = contract.at(
- '0x330E6A122c3cC662a1E4a2eC7328a11E81BA0072');
+ '0x75Ab24d8aFe684366079cB3bBbEa89f8fa217cbc');
+ var documentNotarizedEvent = notarizer.DocumentNotarized();
+
+
+ documentNotarizedEvent.watch(function(error, result) {
+ if (!error){
+ if (result.args.from ==
+ web3.eth.defaultAccount){
+ $("#result").html("Document: " +
+ result.args.text +
+ " notarized as: " + result.args.hash);
+ }
+ }
+ });
+ var notarizationErrorEvent =
+ notarizer.NotarizationError();
+ notarizationErrorEvent.watch(function(error, result) {
+ if (!error){
+ if (result.args.from ==
+ web3.eth.defaultAccount){
+ $("#result").html(
+ "Error. <br/> Document: " +
+ result.args.text +
+ "<br/> Reason: " + result.args.reason);
+ }
+ }
+ });
+
+
+
 
  $("#btnNotarize").click(function() {
- notarizer.notarize($("#document1").val(),
- (error, result) => {
- $("#result").html(result);
- });
+    notarizer.notarize($("#document1").val(),
+        {
+          gas: 300000,
+          from:web3.eth.accounts[0],
+          value: 1000000000000000000
+        },
+    (error, result) => {
+      $("#result").html("Notarization Pending Confirmation");
+    });
  });
  $("#btnCheck").click(function() {
  notarizer.checkDocument($("#document2").val(),
